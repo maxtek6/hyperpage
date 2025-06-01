@@ -30,9 +30,12 @@ add_custom_command(
     COMMENT "Building React frontend"
 )
 
-add_custom_target(
+message( STATUS ${CMAKE_CURRENT_SOURCE_DIR}/react-app/dist)
+
+add_custom_command(
     TARGET example POST_BUILD
-    COMMAND $<TARGET_FILE:hyperpack>> ${CMAKE_CURRENT_SOURCE_DIR}/react-app/dist
-    DEPENDS hyperpack
+    COMMAND $<TARGET_FILE:hyperpack> ${CMAKE_CURRENT_SOURCE_DIR}/react-app/dist
     COMMENT "Building hyperpack archive from React app dist folder"
 )
+
+add_dependencies(example hyperpack)

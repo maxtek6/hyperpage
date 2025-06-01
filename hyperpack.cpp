@@ -116,6 +116,7 @@ void run(int argc, char *argv[])
     auto output_file = program.get<std::string>("--output");
 
     writer = std::make_unique<hyperpage::writer>(output_file);
+    std::cerr << "Packing files from directory: " << directory << std::endl;
     for (const auto &entry : std::filesystem::recursive_directory_iterator(directory))
     {
         if (entry.is_regular_file())
