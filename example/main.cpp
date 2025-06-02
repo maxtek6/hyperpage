@@ -90,8 +90,10 @@ private:
 int main(int argc, char *argv[])
 {
     const std::filesystem::path db_path = std::filesystem::canonical(argv[0]).parent_path() / "hyperpage.db"; 
+#ifdef _WIN32
     WSADATA wsa_data;
     WSAStartup(MAKEWORD(2, 2), &wsa_data);
+#endif
     std::unique_ptr<server> app;
 
     app = std::make_unique<server>(db_path.string());
@@ -106,6 +108,8 @@ int main(int argc, char *argv[])
         sigfn::handle(SIGTERM, handler);
         app->serve();
     }
+#ifdef _WIN32
     WSACleanup();
+#endif
     return 0;
 }
