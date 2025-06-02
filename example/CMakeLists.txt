@@ -14,6 +14,16 @@ FetchContent_Declare(
     GIT_TAG master)
 FetchContent_MakeAvailable(sigfn)
 
+execute_process(
+    COMMAND npm install
+    WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/react-app
+    RESULT_VARIABLE NPM_RESULT
+)
+
+if(NOT NPM_RESULT EQUAL 0)
+    message(FATAL_ERROR "npm install failed with code ${NPM_RESULT}")
+endif()
+
 add_executable(example ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
 target_link_libraries(example
     PRIVATE
