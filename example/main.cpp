@@ -40,7 +40,7 @@ public:
                                         _http(evhttp_new(_base.get()), &evhttp_free)
     {
         _reader = std::make_unique<hyperpage::reader>(dbpath);
-        evhttp_bind_socket(_http.get(), "localhost", 12345);
+        evhttp_bind_socket(_http.get(), "0.0.0.0", 12345);
         evhttp_set_cb(_http.get(), "/", handle_index, this);
         evhttp_set_gencb(_http.get(), handle_request, this);
     }
@@ -90,10 +90,11 @@ private:
 int main(int argc, char *argv[])
 {
     const std::filesystem::path db_path = std::filesystem::canonical(argv[0]).parent_path() / "hyperpage.db"; 
+#ifdef _WIN32
     WSADATA wsa_data;
     WSAStartup(MAKEWORD(2, 2), &wsa_data);
+#endif
     std::unique_ptr<server> app;
-
     app = std::make_unique<server>(db_path.string());
     
     if (app)
@@ -106,6 +107,8 @@ int main(int argc, char *argv[])
         sigfn::handle(SIGTERM, handler);
         app->serve();
     }
+#ifdef _WIN32
     WSACleanup();
+#endif
     return 0;
 }

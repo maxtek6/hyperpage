@@ -74,6 +74,7 @@ mapped_page::mapped_page(const std::filesystem::path &base, const std::filesyste
 
 const std::string &mapped_page::get_path() const
 {
+    std::cerr << "Mapped page path: " << _path << std::endl;
     return _path;
 }
 
