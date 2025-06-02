@@ -24,10 +24,47 @@
 
 #include <maxtest.hpp>
 
+#include <filesystem>
+
+class test_page : public hyperpage::page
+{
+public:
+    test_page(const std::string &path, const std::string &mime_type, const std::string &content) : 
+        _path(path), _mime_type(mime_type), _content(content)
+    {
+    }
+
+    const std::string &get_path() const override
+    {
+        return _path;
+    }
+
+    const std::string &get_mime_type() const override
+    {
+        return _mime_type;
+    }
+
+    const uint8_t *get_content() const override
+    {
+        return reinterpret_cast<const uint8_t *>(_content.data());
+    }
+
+    size_t get_length() const override
+    {
+        return _content.size();
+    }
+    
+private:
+    std::string _path;
+    std::string _mime_type;
+    std::string _content;
+};
+
 MAXTEST_MAIN
 {
     MAXTEST_TEST_CASE(store_load)
     {
-        MAXTEST_ASSERT(1 == 1);
+        std::filesystem::path db_path = std::filesystem::path(args[0]) / "hyperpage_test.db";
+        
     };
 }
