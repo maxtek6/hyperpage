@@ -52,4 +52,4 @@ type and store the contents of each file.
 ### Documentation and Example
 
 This is only intended to cover basic usage. For more info about the API,
-see the [docs](https://maxtex6.github.io/docs/hyperpage). To see how hyperpage is used in a basic use case, the [example](https://github.com/maxtek6/hyperpage/tree/master/example) should be helpful. 
+see the [docs](https://maxtek6.github.io/docs/hyperpage). To see how hyperpage is used in a basic use case, the [example](https://github.com/maxtek6/hyperpage/tree/master/example) should be helpful. 
