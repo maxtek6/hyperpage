@@ -53,7 +53,7 @@ public:
     {
         return _content.size();
     }
-    
+
 private:
     std::string _path;
     std::string _mime_type;
@@ -66,5 +66,16 @@ MAXTEST_MAIN
     {
         std::filesystem::path db_path = std::filesystem::path(args[0]) / "hyperpage_test.db";
         
+        hyperpage::writer writer(db_path.string());
+
+        test_page page("/test1.html", "text/html", "<html><body>Test 1</body></html>");
+        writer.store(page);
+
+        hyperpage::reader reader(db_path.string());
+        auto loaded_page = reader.load("/test1.html");
+        MAXTEST_ASSERT(loaded_page != nullptr);
+
+        loaded_page = reader.load("/test2.html");
+        MAXTEST_ASSERT(loaded_page == nullptr);
     };
 }
