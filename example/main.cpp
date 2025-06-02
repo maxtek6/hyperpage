@@ -30,7 +30,7 @@
 #include <sigfn.hpp>
 
 // std C++ headers
-#include <iostream>
+#include <filesystem>
 #include <memory>
 
 class server
@@ -47,14 +47,11 @@ public:
 
     void serve()
     {
-        std::cout << "Server is running on http://localhost:12345/" << std::endl;
         event_base_dispatch(_base.get());
-        std::cout << "Server has stopped." << std::endl;
     }
 
     void shutdown()
     {
-        printf("Active events: %d\n", event_base_get_num_events(_base.get(), EVENT_BASE_COUNT_ACTIVE));
         event_base_loopbreak(_base.get());
     }
 
@@ -92,21 +89,18 @@ private:
 
 int main(int argc, char *argv[])
 {
+    const std::filesystem::path db_path = std::filesystem::canonical(argv[0]).parent_path() / "hyperpage.db"; 
     WSADATA wsa_data;
     WSAStartup(MAKEWORD(2, 2), &wsa_data);
     std::unique_ptr<server> app;
 
-    if (argc > 1)
-    {
-        app = std::make_unique<server>(argv[1]);
-    }
+    app = std::make_unique<server>(db_path.string());
+    
     if (app)
     {
         sigfn::handler_function handler = [&app](int)
         {
-            std::cerr << "Shutting down server..." << std::endl;
             app->shutdown();
-            std::cerr << "Server shutdown complete." << std::endl;
         };
         sigfn::handle(SIGINT, handler);
         sigfn::handle(SIGTERM, handler);
