@@ -61,7 +61,7 @@ public:
 
     bool found() const
     {
-        return _length > 0;
+        return _found;
     }
 
     const std::string &get_path() const override
