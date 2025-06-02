@@ -30,4 +30,4 @@ maxtest_add_executable(
 
 target_link_libraries(unit PRIVATE hyperpage)
 
-maxtest_add_test(unit store_load)
+maxtest_add_test(unit store_load $<TARGET_FILE_DIR:unit>)
