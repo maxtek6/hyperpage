@@ -27,6 +27,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(HYPERPAGE_TESTS "Build tests" OFF)
 option(HYPERPAGE_EXAMPLE "Build example" OFF)
+option(HYPERPAGE_DOCS "Build documentation" OFF)
 
 include(FetchContent)
 FetchContent_Declare(
@@ -79,4 +80,8 @@ endif()
 
 if(HYPERPAGE_EXAMPLE)
     add_subdirectory(example)
+endif()
+
+if(HYPERPAGE_DOCS)
+    add_subdirectory(docs)
 endif()
