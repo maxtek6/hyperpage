@@ -24,8 +24,8 @@ if(NOT NPM_RESULT EQUAL 0)
     message(FATAL_ERROR "npm install failed with code ${NPM_RESULT}")
 endif()
 
-add_executable(example ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
-target_link_libraries(example
+add_executable(server ${CMAKE_CURRENT_SOURCE_DIR}/main.cpp)
+target_link_libraries(server
     PRIVATE
     sigfn_a
     event
@@ -34,16 +34,16 @@ target_link_libraries(example
 )
 
 add_custom_command(
-    TARGET example PRE_BUILD
+    TARGET server PRE_BUILD
     COMMAND npm run build
     WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/react-app
     COMMENT "Building React frontend"
 )
 
 add_custom_command(
-    TARGET example POST_BUILD
-    COMMAND $<TARGET_FILE:hyperpack> -o $<TARGET_FILE_DIR:example>/hyperpage.db ${CMAKE_CURRENT_SOURCE_DIR}/react-app/dist
+    TARGET server POST_BUILD
+    COMMAND $<TARGET_FILE:hyperpack> -o $<TARGET_FILE_DIR:server>/hyperpage.db ${CMAKE_CURRENT_SOURCE_DIR}/react-app/dist
     COMMENT "Building hyperpack archive from React app dist folder"
 )
 
-add_dependencies(example hyperpack)
+add_dependencies(server hyperpack)
