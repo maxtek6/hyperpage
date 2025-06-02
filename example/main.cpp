@@ -40,7 +40,7 @@ public:
                                         _http(evhttp_new(_base.get()), &evhttp_free)
     {
         _reader = std::make_unique<hyperpage::reader>(dbpath);
-        evhttp_bind_socket(_http.get(), "localhost", 12345);
+        evhttp_bind_socket(_http.get(), "0.0.0.0", 12345);
         evhttp_set_cb(_http.get(), "/", handle_index, this);
         evhttp_set_gencb(_http.get(), handle_request, this);
     }
@@ -86,7 +86,7 @@ private:
     std::unique_ptr<event_base, decltype(&event_base_free)> _base;
     std::unique_ptr<evhttp, decltype(&evhttp_free)> _http;
 };
-
+#include <iostream>
 int main(int argc, char *argv[])
 {
     const std::filesystem::path db_path = std::filesystem::canonical(argv[0]).parent_path() / "hyperpage.db"; 
@@ -95,7 +95,7 @@ int main(int argc, char *argv[])
     WSAStartup(MAKEWORD(2, 2), &wsa_data);
 #endif
     std::unique_ptr<server> app;
-
+    std::cerr << "Starting Hyperpage server with database at: " << db_path << std::endl;
     app = std::make_unique<server>(db_path.string());
     
     if (app)
