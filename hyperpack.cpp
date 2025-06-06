@@ -103,6 +103,10 @@ void run(int argc, char *argv[])
     program.add_argument("-o", "--output")
         .help("Output file for the hyperpage database")
         .default_value("hyperpage.db");
+    program.add_argument("-v", "--verbose")
+        .help("Show detailed output information")
+        .default_value(false)
+        .implicit_value(true);
     
     program.parse_args(argc, argv);
     
