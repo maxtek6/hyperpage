@@ -26,8 +26,28 @@ FetchContent_Declare(
 FetchContent_MakeAvailable(Maxtest)
 
 maxtest_add_executable(
-    unit ${CMAKE_CURRENT_SOURCE_DIR}/unit.cpp)
+    unit ${CMAKE_CURRENT_SOURCE_DIR}/unit.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/../hyperpage.cpp
+    ${megamimes_SOURCE_DIR}/src/MegaMimes.c)
 
-target_link_libraries(unit PRIVATE hyperpage)
+target_include_directories(unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../ ${megamimes_SOURCE_DIR}/src)
+
+if(HYPERPAGE_COVER)
+    if(WIN32)
+        message("skipping code coverage for windows")
+        target_link_libraries(unit PRIVATE SQLite::SQLite3)
+    else()
+        target_compile_options(unit PRIVATE -fprofile-arcs -ftest-coverage -g -O0)
+        target_link_libraries(unit PRIVATE SQLite::SQLite3 gcov "--coverage")        
+        add_custom_target(
+            cover
+            DEPENDS unit)
+        add_custom_command(
+            TARGET cover
+            COMMAND gcovr -r ${CMAKE_CURRENT_SOURCE_DIR}/.. -e ${CMAKE_CURRENT_SOURCE_DIR})
+        endif()
+else()
+    target_link_libraries(unit PRIVATE SQLite::SQLite3)
+endif()
 
 maxtest_add_test(unit store_load $<TARGET_FILE_DIR:unit>)

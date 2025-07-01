@@ -26,6 +26,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 option(HYPERPAGE_TESTS "Build tests" OFF)
+option(HYPERPAGE_COVER "Enable code coverage" OFF)
 option(HYPERPAGE_EXAMPLE "Build example" OFF)
 option(HYPERPAGE_DOCS "Build documentation" OFF)
 

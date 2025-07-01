@@ -1,5 +1,8 @@
 # Hyperpage
 
+![status](https://github.com/maxtek6/hyperpage/actions/workflows/pipeline.yml/badge.svg)
+[![codecov](https://codecov.io/gh/maxtek6/hyperpage/branch/master/graph/badge.svg)](https://codecov.io/gh/maxtek6/hyperpage)
+
 Fast, clean, and efficient solution for archiving and retrieving web content.
 
 ## Requirements
