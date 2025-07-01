@@ -43,7 +43,7 @@ if(HYPERPAGE_COVER)
             cover
             DEPENDS unit)
         add_custom_command(
-            TARGET cover
+            TARGET cover POST_BUILD
             COMMAND gcovr -r ${CMAKE_CURRENT_SOURCE_DIR}/.. -e ${CMAKE_CURRENT_SOURCE_DIR})
         endif()
 else()
