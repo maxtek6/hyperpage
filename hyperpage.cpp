@@ -120,7 +120,8 @@ std::unique_ptr<hyperpage::page> hyperpage::reader::load(const std::string &page
 hyperpage::writer::writer(const std::string &db_path) : _handle(nullptr, close_handle)
 {
     sqlite3 *db = nullptr;
-    if (sqlite3_open(db_path.c_str(), &db) == SQLITE_OK)
+    int rc = sqlite3_open(db_path.c_str(), &db);
+    if (rc == SQLITE_OK)
     {
         const std::string create_table_query =
             "CREATE TABLE IF NOT EXISTS hyperpage ("
