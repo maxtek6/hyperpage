@@ -101,4 +101,49 @@ MAXTEST_MAIN
         loaded_page = reader.load("/test2.html");
         MAXTEST_ASSERT(loaded_page == nullptr);
     };
+
+    MAXTEST_TEST_CASE(open_database)
+    {
+        std::filesystem::path valid_path = std::filesystem::path(args[0]) / "hyperpage_test.db";
+        std::filesystem::path invalid_path = std::filesystem::path(args[0]);
+        std::unique_ptr<hyperpage::reader> reader;
+        std::unique_ptr<hyperpage::writer> writer;
+        bool exception_thrown = false;
+
+        reader.reset(new hyperpage::reader(valid_path.string()));
+        MAXTEST_ASSERT(reader != nullptr);
+        writer.reset(new hyperpage::writer(valid_path.string()));
+        MAXTEST_ASSERT(writer != nullptr);
+
+        try
+        {
+            reader.reset(new hyperpage::reader(invalid_path.string()));
+        }
+        catch(...)
+        {
+            exception_thrown = true;
+        }
+
+        MAXTEST_ASSERT(exception_thrown);
+
+        exception_thrown = false;
+        try
+        {
+            writer.reset(new hyperpage::writer(invalid_path.string()));
+        }
+        catch(...)
+        {
+            exception_thrown = true;
+        }
+        MAXTEST_ASSERT(exception_thrown);
+    };
+
+    MAXTEST_TEST_CASE(mime_type)
+    {
+        const std::string json_path = "test.json";
+        const std::string json_mime_type = "application/json";
+
+        auto file_type = hyperpage::mime_type(json_path);
+        MAXTEST_ASSERT(file_type == json_mime_type);
+    };
 }

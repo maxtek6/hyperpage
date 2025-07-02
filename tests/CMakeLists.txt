@@ -51,3 +51,5 @@ else()
 endif()
 
 maxtest_add_test(unit store_load $<TARGET_FILE_DIR:unit>)
+maxtest_add_test(unit open_database $<TARGET_FILE_DIR:unit>)
+maxtest_add_test(unit mime_type $<TARGET_FILE_DIR:unit>)
