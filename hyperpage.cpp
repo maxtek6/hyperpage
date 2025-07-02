@@ -25,7 +25,7 @@
 #include <sqlite3.h>
 extern "C"
 {
-    #include <MegaMimes.h>
+#include <MegaMimes.h>
 }
 
 static sqlite3 *get_handle(std::unique_ptr<void, std::function<void(void *)>> &handle)
@@ -96,11 +96,14 @@ private:
 hyperpage::reader::reader(const std::string &db_path) : _handle(nullptr, close_handle)
 {
     sqlite3 *db = nullptr;
-    if (sqlite3_open(db_path.c_str(), &db) != SQLITE_OK)
+    if (sqlite3_open(db_path.c_str(), &db) == SQLITE_OK)
+    {
+        _handle.reset(db);
+    }
+    else
     {
         throw std::runtime_error("Failed to open database: " + db_path);
     }
-    _handle.reset(db);
 }
 
 std::unique_ptr<hyperpage::page> hyperpage::reader::load(const std::string &page_path)
@@ -117,18 +120,21 @@ std::unique_ptr<hyperpage::page> hyperpage::reader::load(const std::string &page
 hyperpage::writer::writer(const std::string &db_path) : _handle(nullptr, close_handle)
 {
     sqlite3 *db = nullptr;
-    if (sqlite3_open(db_path.c_str(), &db) != SQLITE_OK)
+    if (sqlite3_open(db_path.c_str(), &db) == SQLITE_OK)
+    {
+        const std::string create_table_query =
+            "CREATE TABLE IF NOT EXISTS hyperpage ("
+            "path TEXT PRIMARY KEY, "
+            "mime_type TEXT, "
+            "content BLOB);"
+            "CREATE INDEX IF NOT EXISTS path_index ON hyperpage (path);";
+        sqlite3_exec(db, create_table_query.c_str(), nullptr, nullptr, nullptr);
+        _handle.reset(db);
+    }
+    else
     {
         throw std::runtime_error("Failed to open database: " + db_path);
     }
-    const std::string create_table_query = 
-        "CREATE TABLE IF NOT EXISTS hyperpage ("
-        "path TEXT PRIMARY KEY, "
-        "mime_type TEXT, "
-        "content BLOB);"
-        "CREATE INDEX IF NOT EXISTS path_index ON hyperpage (path);";
-    sqlite3_exec(db, create_table_query.c_str(), nullptr, nullptr, nullptr);
-    _handle.reset(db);
 }
 
 void hyperpage::writer::store(const hyperpage::page &page)
