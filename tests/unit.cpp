@@ -60,6 +60,25 @@ private:
     std::string _content;
 };
 
+static bool match_buffers(const uint8_t *a, size_t a_len, const uint8_t *b, size_t b_len)
+{
+    bool result(false);
+    if(a_len == b_len)
+    {
+        result = true;
+        int offset = 0;
+        while(result && offset < a_len)
+        {
+            if(a[offset] != b[offset])
+            {
+                result = false;
+            }
+            offset++;
+        }
+    }
+    return result;
+}
+
 MAXTEST_MAIN
 {
     MAXTEST_TEST_CASE(store_load)
@@ -74,7 +93,11 @@ MAXTEST_MAIN
         hyperpage::reader reader(db_path.string());
         auto loaded_page = reader.load("/test1.html");
         MAXTEST_ASSERT(loaded_page != nullptr);
-
+        MAXTEST_ASSERT(loaded_page->get_path() == page.get_path());
+        MAXTEST_ASSERT(loaded_page->get_mime_type() == page.get_mime_type());
+        MAXTEST_ASSERT(loaded_page->get_length() == page.get_length());
+        MAXTEST_ASSERT(match_buffers(loaded_page->get_content(), loaded_page->get_length(),
+                                    page.get_content(), page.get_length()));
         loaded_page = reader.load("/test2.html");
         MAXTEST_ASSERT(loaded_page == nullptr);
     };
