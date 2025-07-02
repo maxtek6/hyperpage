@@ -46,11 +46,13 @@ public:
     {
         const std::string query = "SELECT mime_type, content FROM hyperpage WHERE path = ?;";
         sqlite3_stmt *stmt = nullptr;
+        int rc;
         sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
         _stmt.reset(stmt);
         sqlite3_bind_text(_stmt.get(), 1, _path.c_str(), -1, SQLITE_STATIC);
 
-        if (sqlite3_step(_stmt.get()) == SQLITE_ROW)
+        rc = sqlite3_step(_stmt.get());
+        if (rc == SQLITE_ROW)
         {
             _found = true;
             _mime_type = reinterpret_cast<const char *>(sqlite3_column_text(_stmt.get(), 0));
@@ -96,14 +98,12 @@ private:
 hyperpage::reader::reader(const std::string &db_path) : _handle(nullptr, close_handle)
 {
     sqlite3 *db = nullptr;
-    if (sqlite3_open(db_path.c_str(), &db) == SQLITE_OK)
-    {
-        _handle.reset(db);
-    }
-    else
-    {
+    const int rc = sqlite3_open(db_path.c_str(), &db);
+    if (rc != SQLITE_OK)
+    {    
         throw std::runtime_error("Failed to open database: " + db_path);
     }
+    _handle.reset(db);
 }
 
 std::unique_ptr<hyperpage::page> hyperpage::reader::load(const std::string &page_path)
@@ -120,22 +120,19 @@ std::unique_ptr<hyperpage::page> hyperpage::reader::load(const std::string &page
 hyperpage::writer::writer(const std::string &db_path) : _handle(nullptr, close_handle)
 {
     sqlite3 *db = nullptr;
-    int rc = sqlite3_open(db_path.c_str(), &db);
-    if (rc == SQLITE_OK)
-    {
-        const std::string create_table_query =
-            "CREATE TABLE IF NOT EXISTS hyperpage ("
-            "path TEXT PRIMARY KEY, "
-            "mime_type TEXT, "
-            "content BLOB);"
-            "CREATE INDEX IF NOT EXISTS path_index ON hyperpage (path);";
-        sqlite3_exec(db, create_table_query.c_str(), nullptr, nullptr, nullptr);
-        _handle.reset(db);
-    }
-    else
+    const int rc = sqlite3_open(db_path.c_str(), &db);
+    if (rc != SQLITE_OK)
     {
         throw std::runtime_error("Failed to open database: " + db_path);
     }
+    const std::string create_table_query =
+        "CREATE TABLE IF NOT EXISTS hyperpage ("
+        "path TEXT PRIMARY KEY, "
+        "mime_type TEXT, "
+        "content BLOB);"
+        "CREATE INDEX IF NOT EXISTS path_index ON hyperpage (path);";
+    sqlite3_exec(db, create_table_query.c_str(), nullptr, nullptr, nullptr);
+    _handle.reset(db);
 }
 
 void hyperpage::writer::store(const hyperpage::page &page)
