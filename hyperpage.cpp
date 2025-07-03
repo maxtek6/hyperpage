@@ -39,6 +39,13 @@ static void close_handle(void *handle)
     sqlite3_close(db);
 }
 
+template <class Func, class... Args>
+static inline bool sqlite_call(int expected, Func func, Args... args) noexcept
+{
+    const int rc = func(args...);
+    return rc == expected;
+}
+
 class stored_page : public hyperpage::page
 {
 public:
@@ -46,13 +53,11 @@ public:
     {
         const std::string query = "SELECT mime_type, content FROM hyperpage WHERE path = ?;";
         sqlite3_stmt *stmt = nullptr;
-        int rc;
         sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
         _stmt.reset(stmt);
         sqlite3_bind_text(_stmt.get(), 1, _path.c_str(), -1, SQLITE_STATIC);
 
-        rc = sqlite3_step(_stmt.get());
-        if (rc == SQLITE_ROW)
+        if (sqlite_call(SQLITE_ROW, sqlite3_step, _stmt.get()))
         {
             _found = true;
             _mime_type = reinterpret_cast<const char *>(sqlite3_column_text(_stmt.get(), 0));
@@ -98,8 +103,7 @@ private:
 hyperpage::reader::reader(const std::string &db_path) : _handle(nullptr, close_handle)
 {
     sqlite3 *db = nullptr;
-    const int rc = sqlite3_open(db_path.c_str(), &db);
-    if (rc != SQLITE_OK)
+    if (!sqlite_call(SQLITE_OK, sqlite3_open, db_path.c_str(), &db))
     {    
         throw std::runtime_error("Failed to open database: " + db_path);
     }
@@ -120,8 +124,7 @@ std::unique_ptr<hyperpage::page> hyperpage::reader::load(const std::string &page
 hyperpage::writer::writer(const std::string &db_path) : _handle(nullptr, close_handle)
 {
     sqlite3 *db = nullptr;
-    const int rc = sqlite3_open(db_path.c_str(), &db);
-    if (rc != SQLITE_OK)
+    if (!sqlite_call(SQLITE_OK, sqlite3_open, db_path.c_str(), &db))
     {
         throw std::runtime_error("Failed to open database: " + db_path);
     }
