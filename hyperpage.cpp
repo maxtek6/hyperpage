@@ -42,7 +42,7 @@ static void close_handle(void *handle)
 template <class Func, class... Args>
 static inline bool sqlite_call(int expected, Func func, Args... args) noexcept
 {
-    int rc = func(args...);
+    const int rc = func(args...);
     return rc == expected;
 }
 
