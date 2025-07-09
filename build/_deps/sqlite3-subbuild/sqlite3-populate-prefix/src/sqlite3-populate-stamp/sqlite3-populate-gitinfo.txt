@@ -1,0 +1,15 @@
+# This is a generated file and its contents are an internal implementation detail.
+# The download step will be re-executed if anything in this file changes.
+# No other meaning or use of this file is supported.
+
+method=git
+command=/usr/local/bin/cmake;-DCMAKE_MESSAGE_LOG_LEVEL=VERBOSE;-P;/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3-subbuild/sqlite3-populate-prefix/tmp/sqlite3-populate-gitclone.cmake
+source_dir=/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3-src
+work_dir=/home/runner/work/hyperpage/hyperpage/build/_deps
+repository=https://github.com/sjinks/sqlite3-cmake.git
+remote=origin
+init_submodules=TRUE
+recurse_submodules=--recursive
+submodules=
+CMP0097=NEW
+      

@@ -1,0 +1,3 @@
+/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3_ext-subbuild/CMakeFiles/sqlite3_ext-populate.dir
+/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3_ext-subbuild/CMakeFiles/edit_cache.dir
+/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3_ext-subbuild/CMakeFiles/rebuild_cache.dir

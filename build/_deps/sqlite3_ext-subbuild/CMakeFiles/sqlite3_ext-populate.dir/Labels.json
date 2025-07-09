@@ -1,0 +1,46 @@
+{
+	"sources" : 
+	[
+		{
+			"file" : "/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3_ext-subbuild/CMakeFiles/sqlite3_ext-populate"
+		},
+		{
+			"file" : "/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3_ext-subbuild/CMakeFiles/sqlite3_ext-populate.rule"
+		},
+		{
+			"file" : "/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3_ext-subbuild/CMakeFiles/sqlite3_ext-populate-complete.rule"
+		},
+		{
+			"file" : "/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3_ext-subbuild/sqlite3_ext-populate-prefix/src/sqlite3_ext-populate-stamp/sqlite3_ext-populate-build.rule"
+		},
+		{
+			"file" : "/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3_ext-subbuild/sqlite3_ext-populate-prefix/src/sqlite3_ext-populate-stamp/sqlite3_ext-populate-configure.rule"
+		},
+		{
+			"file" : "/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3_ext-subbuild/sqlite3_ext-populate-prefix/src/sqlite3_ext-populate-stamp/sqlite3_ext-populate-download.rule"
+		},
+		{
+			"file" : "/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3_ext-subbuild/sqlite3_ext-populate-prefix/src/sqlite3_ext-populate-stamp/sqlite3_ext-populate-install.rule"
+		},
+		{
+			"file" : "/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3_ext-subbuild/sqlite3_ext-populate-prefix/src/sqlite3_ext-populate-stamp/sqlite3_ext-populate-mkdir.rule"
+		},
+		{
+			"file" : "/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3_ext-subbuild/sqlite3_ext-populate-prefix/src/sqlite3_ext-populate-stamp/sqlite3_ext-populate-patch.rule"
+		},
+		{
+			"file" : "/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3_ext-subbuild/sqlite3_ext-populate-prefix/src/sqlite3_ext-populate-stamp/sqlite3_ext-populate-test.rule"
+		},
+		{
+			"file" : "/home/runner/work/hyperpage/hyperpage/build/_deps/sqlite3_ext-subbuild/sqlite3_ext-populate-prefix/src/sqlite3_ext-populate-stamp/sqlite3_ext-populate-update.rule"
+		}
+	],
+	"target" : 
+	{
+		"labels" : 
+		[
+			"sqlite3_ext-populate"
+		],
+		"name" : "sqlite3_ext-populate"
+	}
+}
