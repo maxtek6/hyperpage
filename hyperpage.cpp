@@ -33,9 +33,14 @@ static sqlite3 *get_handle(std::unique_ptr<void, std::function<void(void *)>> &h
     return static_cast<sqlite3 *>(handle.get());
 }
 
+template <bool IsWriter>
 static void close_handle(void *handle)
 {
     sqlite3 *db = static_cast<sqlite3 *>(handle);
+    if (IsWriter)
+    {
+        sqlite3_exec(db, "VACUUM;", nullptr, nullptr, nullptr);
+    }
     sqlite3_close(db);
 }
 
@@ -100,7 +105,7 @@ private:
     size_t _length;
 };
 
-hyperpage::reader::reader(const std::string &db_path) : _handle(nullptr, close_handle)
+hyperpage::reader::reader(const std::string &db_path) : _handle(nullptr, close_handle<false>)
 {
     sqlite3 *db = nullptr;
     if (!sqlite_call(SQLITE_OK, sqlite3_open, db_path.c_str(), &db))
@@ -121,7 +126,7 @@ std::unique_ptr<hyperpage::page> hyperpage::reader::load(const std::string &page
     return result;
 }
 
-hyperpage::writer::writer(const std::string &db_path) : _handle(nullptr, close_handle)
+hyperpage::writer::writer(const std::string &db_path) : _handle(nullptr, close_handle<true>)
 {
     sqlite3 *db = nullptr;
     if (!sqlite_call(SQLITE_OK, sqlite3_open, db_path.c_str(), &db))
@@ -133,7 +138,7 @@ hyperpage::writer::writer(const std::string &db_path) : _handle(nullptr, close_h
         "path TEXT PRIMARY KEY, "
         "mime_type TEXT, "
         "content BLOB);"
-        "CREATE INDEX IF NOT EXISTS path_index ON hyperpage (path);";
+        "CREATE UNIQUE INDEX IF NOT EXISTS path_index ON hyperpage (path);";
     sqlite3_exec(db, create_table_query.c_str(), nullptr, nullptr, nullptr);
     _handle.reset(db);
 }
@@ -141,7 +146,9 @@ hyperpage::writer::writer(const std::string &db_path) : _handle(nullptr, close_h
 void hyperpage::writer::store(const hyperpage::page &page)
 {
     sqlite3 *db = get_handle(_handle);
-    const std::string query = "INSERT OR REPLACE INTO hyperpage (path, mime_type, content) VALUES (?, ?, ?);";
+    const std::string query = 
+        "INSERT INTO hyperpage (path, mime_type, content) VALUES (?, ?, ?);"
+        "ON CONFLICT(path) DO UPDATE SET mime_type=excluded.mime_type, content=excluded.content;";
     sqlite3_stmt *stmt = nullptr;
 
     sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
@@ -154,5 +161,6 @@ void hyperpage::writer::store(const hyperpage::page &page)
 
 std::string hyperpage::mime_type(const std::string &path)
 {
-    return std::string(getMegaMimeType(path.c_str()));
+    const char *mime = getMegaMimeType(path.c_str());
+    return std::string(mime ? mime : "application/octet-stream");
 }

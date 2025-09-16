@@ -111,6 +111,7 @@ namespace hyperpage
          *  @param db_path The path to the hyperpage database file.
          */
         writer(const std::string &db_path);
+
         /**
          *  @brief Stores a page in the hyperpage database.
          *
