@@ -52,15 +52,15 @@ static void run(int argc, char *argv[]);
 int main(int argc, char *argv[])
 {
     int exit_code(0);
-    //try
-    //{
+    try
+    {
         run(argc, argv);
-    //}
-    //catch (const std::exception &e)
-    //{
-    //    std::cerr << "error: " << e.what() << std::endl;
-    //    exit_code = 1;
-    //}
+    }
+    catch (const std::exception &e)
+    {
+        std::cerr << "error: " << e.what() << std::endl;
+        exit_code = 1;
+    }
     return exit_code;
 }
 
