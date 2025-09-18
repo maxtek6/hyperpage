@@ -73,6 +73,68 @@ add_executable(hyperpack ${CMAKE_CURRENT_SOURCE_DIR}/hyperpack.cpp)
 target_include_directories(hyperpack PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(hyperpack PRIVATE argparse hyperpage mio::mio)
 
+# CMake function for creating hyperpack archives
+#
+# Usage: hyperpage_add_archive(<name> <directory>)
+#
+# This function creates a CMake target that will run hyperpack to create
+# an archive database from the specified directory during the build process.
+#
+# Parameters:
+#   name      - Name of the target and output database file (without .db extension)
+#   directory - Directory to pack into the hyperpage database
+#
+# The function will:
+#   - Create a custom target named <name>
+#   - Generate <name>.db in CMAKE_CURRENT_BINARY_DIR
+#   - Add dependency on the hyperpack executable
+#   - Set HYPERPAGE_ARCHIVE_FILE property on the target for the output file path
+#
+# Example:
+#   hyperpage_add_archive(my_content "${CMAKE_CURRENT_SOURCE_DIR}/web_assets")
+#   add_dependencies(my_server my_content)  # Ensure archive is built before server
+#
+function(hyperpage_add_archive name directory)
+    # Validate arguments
+    if(NOT name)
+        message(FATAL_ERROR "hyperpage_add_archive: Archive name must be specified")
+    endif()
+    
+    if(NOT directory)
+        message(FATAL_ERROR "hyperpage_add_archive: Directory must be specified")
+    endif()
+    
+    # Convert to absolute path for better reliability
+    get_filename_component(abs_directory "${directory}" ABSOLUTE)
+    
+    # Create the output database file name
+    set(output_file "${CMAKE_CURRENT_BINARY_DIR}/${name}.db")
+    
+    # Create a custom target for this archive
+    add_custom_target(${name}
+        DEPENDS ${output_file}
+        COMMENT "Building hyperpack archive: ${name}"
+    )
+    
+    # Add dependency on hyperpack executable
+    add_dependencies(${name} hyperpack)
+    
+    # Create custom command to generate the archive
+    add_custom_command(
+        OUTPUT ${output_file}
+        COMMAND $<TARGET_FILE:hyperpack> -o ${output_file} ${abs_directory}
+        DEPENDS hyperpack
+        WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}
+        COMMENT "Creating hyperpack archive ${name} from directory: ${abs_directory}"
+        VERBATIM
+    )
+    
+    # Set a property so consumers can find the generated file
+    set_target_properties(${name} PROPERTIES
+        HYPERPAGE_ARCHIVE_FILE "${output_file}"
+    )
+endfunction()
+
 if(HYPERPAGE_TESTS)
     include(CTest)
     enable_testing()

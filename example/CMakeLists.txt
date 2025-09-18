@@ -40,6 +40,7 @@ add_custom_command(
     COMMENT "Building React frontend"
 )
 
+# Traditional approach using custom commands
 add_custom_command(
     TARGET server POST_BUILD
     COMMAND $<TARGET_FILE:hyperpack> -o $<TARGET_FILE_DIR:server>/hyperpage.db ${CMAKE_CURRENT_SOURCE_DIR}/react-app/dist
@@ -47,3 +48,13 @@ add_custom_command(
 )
 
 add_dependencies(server hyperpack)
+
+# Alternative approach using the new hyperpage_add_archive function:
+# This would replace the above custom command and dependency:
+#
+# hyperpage_add_archive(react_content "${CMAKE_CURRENT_SOURCE_DIR}/react-app/dist")
+# add_dependencies(server react_content)
+# 
+# Then in the C++ code, you could access the archive at:
+# get_target_property(ARCHIVE_FILE react_content HYPERPAGE_ARCHIVE_FILE)
+# Or simply use: ${CMAKE_CURRENT_BINARY_DIR}/react_content.db
