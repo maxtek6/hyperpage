@@ -179,4 +179,47 @@ MAXTEST_MAIN
         MAXTEST_ASSERT(match_buffers(loaded_page->get_content(), loaded_page->get_length(),
                                     reinterpret_cast<const uint8_t*>(updated_content.data()), updated_content.size()));
     };
+
+    MAXTEST_TEST_CASE(archive_size_no_growth_test)
+    {
+        std::filesystem::path db_path = std::filesystem::path(args[0]) / "hyperpage_size_test.db";
+        
+        // Remove any existing database file to start fresh
+        if (std::filesystem::exists(db_path)) {
+            std::filesystem::remove(db_path);
+        }
+        
+        // Create initial content
+        test_page test_page_content("/test.html", "text/html", "<html><body>Test Content</body></html>");
+        
+        // Store initial content and record database size
+        {
+            hyperpage::writer writer(db_path.string());
+            writer.store(test_page_content);
+        }
+        
+        size_t initial_size = std::filesystem::file_size(db_path);
+        
+        // Overwrite with identical content multiple times
+        for (int i = 0; i < 5; ++i) {
+            hyperpage::writer writer(db_path.string());
+            writer.store(test_page_content);  // Same content each time
+        }
+        
+        size_t final_size = std::filesystem::file_size(db_path);
+        
+        // The database size should not grow significantly when overwriting with identical content
+        // Allow for some variance due to SQLite overhead, but it shouldn't grow substantially
+        MAXTEST_ASSERT(final_size <= initial_size * 1.1);  // Max 10% growth tolerance
+        
+        // Verify content is still correct
+        hyperpage::reader reader(db_path.string());
+        auto loaded_page = reader.load("/test.html");
+        MAXTEST_ASSERT(loaded_page != nullptr);
+        MAXTEST_ASSERT(loaded_page->get_path() == "/test.html");
+        std::string expected_content = "<html><body>Test Content</body></html>";
+        MAXTEST_ASSERT(loaded_page->get_length() == expected_content.size());
+        MAXTEST_ASSERT(match_buffers(loaded_page->get_content(), loaded_page->get_length(),
+                                    reinterpret_cast<const uint8_t*>(expected_content.data()), expected_content.size()));
+    };
 }
