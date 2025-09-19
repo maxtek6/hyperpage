@@ -133,23 +133,13 @@ hyperpage::writer::writer(const std::string &db_path) : _handle(nullptr, close_h
     {
         throw std::runtime_error("Failed to open database: " + db_path);
     }
-    
-    // Set journal mode to DELETE to avoid WAL mode locking issues
-    sqlite3_exec(db, "PRAGMA journal_mode=DELETE;", nullptr, nullptr, nullptr);
-    
-    // Create table
     const std::string create_table_query =
         "CREATE TABLE IF NOT EXISTS hyperpage ("
         "path TEXT PRIMARY KEY, "
         "mime_type TEXT, "
-        "content BLOB);";
-    sqlite3_exec(db, create_table_query.c_str(), nullptr, nullptr, nullptr);
-    
-    // Create index
-    const std::string create_index_query =
+        "content BLOB);"
         "CREATE UNIQUE INDEX IF NOT EXISTS path_index ON hyperpage (path);";
-    sqlite3_exec(db, create_index_query.c_str(), nullptr, nullptr, nullptr);
-    
+    sqlite3_exec(db, create_table_query.c_str(), nullptr, nullptr, nullptr);
     _handle.reset(db);
 }
 
@@ -157,7 +147,8 @@ void hyperpage::writer::store(const hyperpage::page &page)
 {
     sqlite3 *db = get_handle(_handle);
     const std::string query = 
-        "INSERT OR REPLACE INTO hyperpage (path, mime_type, content) VALUES (?, ?, ?);";
+        "INSERT INTO hyperpage (path, mime_type, content) VALUES (?, ?, ?) "
+        "ON CONFLICT(path) DO UPDATE SET mime_type=excluded.mime_type, content=excluded.content;";
     sqlite3_stmt *stmt = nullptr;
 
     sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
