@@ -30,15 +30,15 @@ maxtest_add_executable(
     ${CMAKE_CURRENT_SOURCE_DIR}/../hyperpage.cpp
     ${megamimes_SOURCE_DIR}/src/MegaMimes.c)
 
-target_include_directories(unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../ ${megamimes_SOURCE_DIR}/src)
+target_include_directories(unit PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/../ ${megamimes_SOURCE_DIR}/src ${SQLITE3_INCLUDE_DIRS})
 
 if(HYPERPAGE_COVER)
     if(WIN32)
         message("skipping code coverage for windows")
-        target_link_libraries(unit PRIVATE SQLite::SQLite3)
+        target_link_libraries(unit PRIVATE ${SQLITE3_LIBRARIES})
     else()
         target_compile_options(unit PRIVATE -fprofile-arcs -ftest-coverage -g -O0)
-        target_link_libraries(unit PRIVATE SQLite::SQLite3 gcov "--coverage")        
+        target_link_libraries(unit PRIVATE ${SQLITE3_LIBRARIES} gcov "--coverage")        
         add_custom_target(
             cover
             DEPENDS unit)
@@ -47,7 +47,7 @@ if(HYPERPAGE_COVER)
             COMMAND gcovr -r ${CMAKE_CURRENT_SOURCE_DIR}/.. -e ${CMAKE_CURRENT_SOURCE_DIR})
         endif()
 else()
-    target_link_libraries(unit PRIVATE SQLite::SQLite3)
+    target_link_libraries(unit PRIVATE ${SQLITE3_LIBRARIES})
 endif()
 
 maxtest_add_test(unit store_load $<TARGET_FILE_DIR:unit>)

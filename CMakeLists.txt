@@ -38,12 +38,9 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(MegaMimes)
 
-FetchContent_Declare(
-    sqlite3
-    GIT_REPOSITORY https://github.com/sjinks/sqlite3-cmake.git
-    GIT_TAG master
-)
-FetchContent_MakeAvailable(sqlite3)
+# Use system SQLite3 instead of fetching
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SQLITE3 REQUIRED sqlite3)
 
 FetchContent_Declare(
     argparse
@@ -66,8 +63,8 @@ add_library(
 )
 
 target_include_directories(hyperpage PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} 
-    ${megamimes_SOURCE_DIR}/src)
-target_link_libraries(hyperpage PUBLIC SQLite::SQLite3)
+    ${megamimes_SOURCE_DIR}/src ${SQLITE3_INCLUDE_DIRS})
+target_link_libraries(hyperpage PUBLIC ${SQLITE3_LIBRARIES})
 
 add_executable(hyperpack ${CMAKE_CURRENT_SOURCE_DIR}/hyperpack.cpp)
 target_include_directories(hyperpack PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
