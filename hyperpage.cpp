@@ -147,7 +147,7 @@ void hyperpage::writer::store(const hyperpage::page &page)
 {
     sqlite3 *db = get_handle(_handle);
     const std::string query = 
-        "INSERT INTO hyperpage (path, mime_type, content) VALUES (?, ?, ?);"
+        "INSERT INTO hyperpage (path, mime_type, content) VALUES (?, ?, ?) "
         "ON CONFLICT(path) DO UPDATE SET mime_type=excluded.mime_type, content=excluded.content;";
     sqlite3_stmt *stmt = nullptr;
 
