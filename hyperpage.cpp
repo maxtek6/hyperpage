@@ -23,6 +23,7 @@
 #include <hyperpage.hpp>
 
 #include <sqlite3.h>
+#include <iostream>
 extern "C"
 {
 #include <MegaMimes.h>
@@ -39,9 +40,16 @@ static void close_handle(void *handle)
     sqlite3 *db = static_cast<sqlite3 *>(handle);
     if (IsWriter)
     {
-        sqlite3_exec(db, "VACUUM;", nullptr, nullptr, nullptr);
+        // Ensure any pending transaction is committed
+        sqlite3_exec(db, "COMMIT;", nullptr, nullptr, nullptr);
+        // Removed VACUUM for now to see if it's causing locking issues
+        // sqlite3_exec(db, "VACUUM;", nullptr, nullptr, nullptr);
     }
-    sqlite3_close(db);
+    // Use sqlite3_close_v2 to finalize any remaining prepared statements
+    int rc = sqlite3_close_v2(db);
+    if (rc != SQLITE_OK) {
+        std::cerr << "Warning: Failed to close database properly: " << rc << std::endl;
+    }
 }
 
 template <class Func, class... Args>
@@ -133,29 +141,55 @@ hyperpage::writer::writer(const std::string &db_path) : _handle(nullptr, close_h
     {
         throw std::runtime_error("Failed to open database: " + db_path);
     }
+    
+    // Set a busy timeout to handle locking issues
+    sqlite3_busy_timeout(db, 5000); // 5 second timeout
+    
+    // Set journal mode to DELETE to avoid WAL mode locking issues
+    sqlite3_exec(db, "PRAGMA journal_mode=DELETE;", nullptr, nullptr, nullptr);
+    
+    // Create table
     const std::string create_table_query =
         "CREATE TABLE IF NOT EXISTS hyperpage ("
         "path TEXT PRIMARY KEY, "
         "mime_type TEXT, "
-        "content BLOB);"
-        "CREATE UNIQUE INDEX IF NOT EXISTS path_index ON hyperpage (path);";
+        "content BLOB);";
     sqlite3_exec(db, create_table_query.c_str(), nullptr, nullptr, nullptr);
+    
+    // Create index
+    const std::string create_index_query =
+        "CREATE UNIQUE INDEX IF NOT EXISTS path_index ON hyperpage (path);";
+    sqlite3_exec(db, create_index_query.c_str(), nullptr, nullptr, nullptr);
+    
     _handle.reset(db);
 }
 
 void hyperpage::writer::store(const hyperpage::page &page)
 {
+    std::cerr << "DEBUG: store() called for path: " << page.get_path() << std::endl;
     sqlite3 *db = get_handle(_handle);
     const std::string query = 
-        "INSERT INTO hyperpage (path, mime_type, content) VALUES (?, ?, ?);"
-        "ON CONFLICT(path) DO UPDATE SET mime_type=excluded.mime_type, content=excluded.content;";
+        "INSERT OR REPLACE INTO hyperpage (path, mime_type, content) VALUES (?, ?, ?);";
     sqlite3_stmt *stmt = nullptr;
 
-    sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
+    int rc = sqlite3_prepare_v2(db, query.c_str(), -1, &stmt, nullptr);
+    if (rc != SQLITE_OK) {
+        std::cerr << "Prepare failed: " << sqlite3_errmsg(db) << std::endl;
+        sqlite3_finalize(stmt);
+        return;
+    }
+    
     sqlite3_bind_text(stmt, 1, page.get_path().c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_text(stmt, 2, page.get_mime_type().c_str(), -1, SQLITE_STATIC);
     sqlite3_bind_blob(stmt, 3, page.get_content(), static_cast<int>(page.get_length()), SQLITE_STATIC);
-    sqlite3_step(stmt);
+    
+    rc = sqlite3_step(stmt);
+    if (rc != SQLITE_DONE) {
+        std::cerr << "Step failed: " << sqlite3_errmsg(db) << " (code: " << rc << ")" << std::endl;
+    } else {
+        std::cerr << "Step succeeded" << std::endl;
+    }
+    
     sqlite3_finalize(stmt);
 }
 
