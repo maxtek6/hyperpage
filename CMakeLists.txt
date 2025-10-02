@@ -34,7 +34,7 @@ include(FetchContent)
 FetchContent_Declare(
     MegaMimes
     GIT_REPOSITORY https://github.com/kobbyowen/MegaMimes.git
-    GIT_TAG master
+    GIT_TAG b839068db99cbfcff1af8df1229bd7e41701fe96
 )
 FetchContent_MakeAvailable(MegaMimes)
 
