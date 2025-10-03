@@ -148,3 +148,22 @@ endif()
 if(HYPERPAGE_DOCS)
     add_subdirectory(docs)
 endif()
+
+install (TARGETS hyperpage hyperpack
+    EXPORT hyperpage-targets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(EXPORT hyperpage-targets
+    FILE hyperpage-targets.cmake
+    NAMESPACE hyperpage::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/hyperpage
+)
+
+install(FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/hyperpage-config.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/hyperpage
+)
