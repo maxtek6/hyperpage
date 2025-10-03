@@ -75,9 +75,14 @@ target_include_directories(
 
 target_link_libraries(hyperpage PUBLIC SQLite::SQLite3)
 
+set_target_properties(hyperpage PROPERTIES
+    PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/hyperpage.hpp"
+)
+
 add_executable(hyperpack ${CMAKE_CURRENT_SOURCE_DIR}/hyperpack.cpp)
 target_include_directories(hyperpack PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(hyperpack PRIVATE argparse hyperpage mio::mio)
+
 
 # CMake function for creating hyperpack archives
 #
