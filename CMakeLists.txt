@@ -65,8 +65,14 @@ add_library(
     ${megamimes_SOURCE_DIR}/src/MegaMimes.c
 )
 
-target_include_directories(hyperpage PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} 
+target_include_directories(
+    hyperpage 
+    PUBLIC 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>
+    PRIVATE
     ${megamimes_SOURCE_DIR}/src)
+
 target_link_libraries(hyperpage PUBLIC SQLite::SQLite3)
 
 add_executable(hyperpack ${CMAKE_CURRENT_SOURCE_DIR}/hyperpack.cpp)
