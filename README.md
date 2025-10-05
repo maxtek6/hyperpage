@@ -38,20 +38,51 @@ Hyperpack is a command line utility used to create a hyperpage database
 file:
 
 ```
-Usage: hyperpack [--help] [--output VAR] directory
+Usage: hyperpack [--help] [--version] [--output VAR] [--verbose] directories...
 
 Positional arguments:
-  directory      Directory to scan for files to pack into the hyperpage database [required]
+  directories    Directories to scan for files to pack into the hyperpage database [nargs: 1 or more] [required]
 
 Optional arguments:
   -h, --help     shows help message and exits
+  -v, --version  prints version information and exits
   -o, --output   Output file for the hyperpage database [nargs=0..1] [default: "hyperpage.db"]
+  -v, --verbose  Show detailed output information
 ```
 
-It will iterate through a given directory, storing its files based on 
-paths relative to the given directory. It will also detect the mime
-type and store the contents of each file.
+### Note on Overwriting
 
+If two or more files share the same **relative subpath** (i.e., the same path within their respective parent directories), the file from the **rightmost directory** specified on the command line will overwrite the others in the final archive.
+
+Only **exact path matches** are considered conflicts — differing subdirectories or filenames will coexist as separate entries.
+
+#### Example
+
+Suppose you run:
+```bash
+hyperpack -o output.hp dir1 dir2 dir3
+```
+And the directories contain:
+```bash
+dir1/Subdir1/index.html
+dir2/Subdir2/index.html
+dir3/Index.html
+```
+These will result in three distinct files inside the archive:
+```bash
+Subdir1/index.html
+/Subdir2/index.html
+/Index.html
+```
+However, if two or more directories contain the same relative path, for example:
+```bash
+dir1/public/index.html
+dir2/public/index.html
+```
+then the file from dir2 (the rightmost one) will overwrite the file from dir1 in the resulting archive entry:
+```bash
+/public/index.html
+```
 ### Documentation and Example
 
 This is only intended to cover basic usage. For more info about the API,

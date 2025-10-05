@@ -48,6 +48,8 @@ private:
 };
 
 static void run(int argc, char *argv[]);
+static void write_directory_to_file(const std::string &directory,
+                                    std::unique_ptr<hyperpage::writer> &writer);
 
 int main(int argc, char *argv[])
 {
@@ -92,13 +94,36 @@ size_t mapped_page::get_length() const
     return _mmap->length();
 }
 
+void write_directory_to_file(const std::string &directory, std::unique_ptr<hyperpage::writer> &writer)
+{
+    if (!std::filesystem::exists(directory))
+    {
+        throw std::runtime_error("The specified directory does not exist");
+    }
+    
+    if(!std::filesystem::is_directory(directory))
+    {
+        throw std::runtime_error("The specified directory is not a directory.");
+    }
+
+    for (const auto &entry : std::filesystem::recursive_directory_iterator(directory))
+    {
+        if (entry.is_regular_file())
+        {
+            mapped_page page(directory, entry.path());
+            writer->store(page);
+        }
+    }
+}
+
 void run(int argc, char *argv[])
 {
     argparse::ArgumentParser program("hyperpack");
     std::unique_ptr<hyperpage::writer> writer;
 
-    program.add_argument("directory")
-        .help("Directory to scan for files to pack into the hyperpage database")
+    program.add_argument("directories")
+        .help("Directories to scan for files to pack into the hyperpage database")
+        .nargs(argparse::nargs_pattern::at_least_one)
         .required();
     program.add_argument("-o", "--output")
         .help("Output file for the hyperpage database")
@@ -110,22 +135,12 @@ void run(int argc, char *argv[])
     
     program.parse_args(argc, argv);
     
-
-    auto directory = program.get<std::string>("directory");
-    if (!std::filesystem::exists(directory) || !std::filesystem::is_directory(directory))
-    {
-        throw std::runtime_error("The specified directory does not exist or is not a directory.");
-    }
-
     auto output_file = program.get<std::string>("--output");
-
     writer = std::make_unique<hyperpage::writer>(output_file);
-    for (const auto &entry : std::filesystem::recursive_directory_iterator(directory))
-    {
-        if (entry.is_regular_file())
-        {
-            mapped_page page(directory, entry.path());
-            writer->store(page);
-        }
-    }
+    std::vector<std::string> directories = program.get<std::vector<std::string>>("directories");
+    std::for_each(directories.begin(), directories.end(), [&](const auto &directory)
+                                                          {
+                                                              write_directory_to_file(directory,
+                                                                                      writer);
+                                                          });
 }
