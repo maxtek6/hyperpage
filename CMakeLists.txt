@@ -65,13 +65,24 @@ add_library(
     ${megamimes_SOURCE_DIR}/src/MegaMimes.c
 )
 
-target_include_directories(hyperpage PUBLIC ${CMAKE_CURRENT_SOURCE_DIR} 
+target_include_directories(
+    hyperpage 
+    PUBLIC 
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
+    $<INSTALL_INTERFACE:include>
+    PRIVATE
     ${megamimes_SOURCE_DIR}/src)
+
 target_link_libraries(hyperpage PUBLIC SQLite::SQLite3)
+
+set_target_properties(hyperpage PROPERTIES
+    PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/hyperpage.hpp"
+)
 
 add_executable(hyperpack ${CMAKE_CURRENT_SOURCE_DIR}/hyperpack.cpp)
 target_include_directories(hyperpack PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
 target_link_libraries(hyperpack PRIVATE argparse hyperpage mio::mio)
+
 
 # CMake function for creating hyperpack archives
 #
@@ -148,3 +159,22 @@ endif()
 if(HYPERPAGE_DOCS)
     add_subdirectory(docs)
 endif()
+
+install (TARGETS hyperpage hyperpack
+    EXPORT hyperpage-targets
+    ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
+    RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
+    PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
+)
+
+install(EXPORT hyperpage-targets
+    FILE hyperpage-targets.cmake
+    NAMESPACE hyperpage::
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/hyperpage
+)
+
+install(FILES
+    ${CMAKE_CURRENT_SOURCE_DIR}/hyperpage-config.cmake
+    DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/hyperpage
+)
