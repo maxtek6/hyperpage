@@ -1,0 +1,10 @@
+{
+  "name": "hyperpage",
+  "version": "1.0.0",
+  "dependencies": [
+    "argparse",
+    "megamimes",
+    "mio",
+    "sqlite3"
+  ]
+}

@@ -30,50 +30,81 @@ option(HYPERPAGE_COVER "Enable code coverage" OFF)
 option(HYPERPAGE_EXAMPLE "Build example" OFF)
 option(HYPERPAGE_DOCS "Build documentation" OFF)
 
-include(FetchContent)
-FetchContent_Declare(
-    MegaMimes
-    GIT_REPOSITORY https://github.com/kobbyowen/MegaMimes.git
-    GIT_TAG b839068db99cbfcff1af8df1229bd7e41701fe96
-)
-FetchContent_MakeAvailable(MegaMimes)
+# Check if CMAKE_TOOLCHAIN_FILE is set
+if(DEFINED CMAKE_TOOLCHAIN_FILE)
+    message(STATUS "CMAKE_TOOLCHAIN_FILE is set to: ${CMAKE_TOOLCHAIN_FILE}")
 
-FetchContent_Declare(
-    sqlite3
-    GIT_REPOSITORY https://github.com/sjinks/sqlite3-cmake.git
-    GIT_TAG master
-)
-FetchContent_MakeAvailable(sqlite3)
+    # Check if the path points to the vcpkg toolchain file
+    if("${CMAKE_TOOLCHAIN_FILE}" MATCHES ".*[/\\]scripts[/\\]buildsystems[/\\]vcpkg.cmake$")
+        message(STATUS "vcpkg toolchain file detected via path matching.")
+        set(VCPKG_TOOLCHAIN_ACTIVE TRUE)
+    endif()
+endif()
 
-FetchContent_Declare(
-    argparse
-    GIT_REPOSITORY https://github.com/p-ranav/argparse.git
-    GIT_TAG master
-)
-FetchContent_MakeAvailable(argparse)
-FetchContent_Declare(
-    mio
-    GIT_REPOSITORY https://github.com/maxtek6/mio.git
-    GIT_TAG master
-)
-FetchContent_MakeAvailable(mio)
+if(VCPKG_TOOLCHAIN_ACTIVE)
+    find_package(megamimes CONFIG REQUIRED)
+    find_package(unofficial-sqlite3 CONFIG REQUIRED)
+    find_package(argparse CONFIG REQUIRED)
+    find_package(mio CONFIG REQUIRED)
+
+    set(HYPERPAGE_EXTRA_SOURCES "")
+    set(HYPERPAGE_PRIVATE_INCLUDES "")
+    set(HYPERPAGE_SQLITE_TARGET unofficial::sqlite3::sqlite3)
+else()
+    include(FetchContent)
+    FetchContent_Declare(
+        MegaMimes
+        GIT_REPOSITORY https://github.com/kobbyowen/MegaMimes.git
+        GIT_TAG b839068db99cbfcff1af8df1229bd7e41701fe96
+    )
+    FetchContent_MakeAvailable(MegaMimes)
+
+    FetchContent_Declare(
+        sqlite3
+        GIT_REPOSITORY https://github.com/sjinks/sqlite3-cmake.git
+        GIT_TAG master
+    )
+    FetchContent_MakeAvailable(sqlite3)
+
+    FetchContent_Declare(
+        argparse
+        GIT_REPOSITORY https://github.com/p-ranav/argparse.git
+        GIT_TAG master
+    )
+    FetchContent_MakeAvailable(argparse)
+
+    FetchContent_Declare(
+        mio
+        GIT_REPOSITORY https://github.com/maxtek6/mio.git
+        GIT_TAG master
+    )
+    FetchContent_MakeAvailable(mio)
+
+    set(HYPERPAGE_EXTRA_SOURCES ${megamimes_SOURCE_DIR}/src/MegaMimes.c)
+    set(HYPERPAGE_PRIVATE_INCLUDES ${megamimes_SOURCE_DIR}/src)
+    set(HYPERPAGE_SQLITE_TARGET SQLite::SQLite3)
+endif()
 
 add_library(
-    hyperpage 
+    hyperpage
     STATIC
     ${CMAKE_CURRENT_SOURCE_DIR}/hyperpage.cpp
-    ${megamimes_SOURCE_DIR}/src/MegaMimes.c
+    ${HYPERPAGE_EXTRA_SOURCES}
 )
 
 target_include_directories(
-    hyperpage 
-    PUBLIC 
+    hyperpage
+    PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}>
     $<INSTALL_INTERFACE:include>
     PRIVATE
-    ${megamimes_SOURCE_DIR}/src)
+    ${HYPERPAGE_PRIVATE_INCLUDES}
+)
 
-target_link_libraries(hyperpage PUBLIC SQLite::SQLite3)
+target_link_libraries(hyperpage PUBLIC ${HYPERPAGE_SQLITE_TARGET})
+if(VCPKG_TOOLCHAIN_ACTIVE)
+    target_link_libraries(hyperpage PUBLIC megamimes::megamimes)
+endif()
 
 set_target_properties(hyperpage PROPERTIES
     PUBLIC_HEADER "${CMAKE_CURRENT_SOURCE_DIR}/hyperpage.hpp"
@@ -81,7 +112,7 @@ set_target_properties(hyperpage PROPERTIES
 
 add_executable(hyperpack ${CMAKE_CURRENT_SOURCE_DIR}/hyperpack.cpp)
 target_include_directories(hyperpack PRIVATE ${CMAKE_CURRENT_SOURCE_DIR})
-target_link_libraries(hyperpack PRIVATE argparse hyperpage mio::mio)
+target_link_libraries(hyperpack PRIVATE argparse::argparse hyperpage mio::mio)
 
 
 # CMake function for creating hyperpack archives

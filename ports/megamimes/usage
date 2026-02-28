@@ -1,0 +1,4 @@
+The package megamimes provides CMake targets:
+
+    find_package(megamimes CONFIG REQUIRED)
+    target_link_libraries(main PRIVATE megamimes::megamimes)
